@@ -1,0 +1,654 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>BiSeNet V2 : Bilateral Network with Guided Aggregation for Real-time Semantic Segmentation</title><style>
+/* cspell:disable-file */
+/* webkit printing magic: print all background colors */
+html {
+	-webkit-print-color-adjust: exact;
+}
+* {
+	box-sizing: border-box;
+	-webkit-print-color-adjust: exact;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+}
+@media only screen {
+	body {
+		margin: 2em auto;
+		max-width: 900px;
+		color: rgb(55, 53, 47);
+	}
+}
+
+body {
+	line-height: 1.5;
+	white-space: pre-wrap;
+}
+
+a,
+a.visited {
+	color: inherit;
+	text-decoration: underline;
+}
+
+.pdf-relative-link-path {
+	font-size: 80%;
+	color: #444;
+}
+
+h1,
+h2,
+h3 {
+	letter-spacing: -0.01em;
+	line-height: 1.2;
+	font-weight: 600;
+	margin-bottom: 0;
+}
+
+.page-title {
+	font-size: 2.5rem;
+	font-weight: 700;
+	margin-top: 0;
+	margin-bottom: 0.75em;
+}
+
+h1 {
+	font-size: 1.875rem;
+	margin-top: 1.875rem;
+}
+
+h2 {
+	font-size: 1.5rem;
+	margin-top: 1.5rem;
+}
+
+h3 {
+	font-size: 1.25rem;
+	margin-top: 1.25rem;
+}
+
+.source {
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	padding: 1.5em;
+	word-break: break-all;
+}
+
+.callout {
+	border-radius: 3px;
+	padding: 1rem;
+}
+
+figure {
+	margin: 1.25em 0;
+	page-break-inside: avoid;
+}
+
+figcaption {
+	opacity: 0.5;
+	font-size: 85%;
+	margin-top: 0.5em;
+}
+
+mark {
+	background-color: transparent;
+}
+
+.indented {
+	padding-left: 1.5em;
+}
+
+hr {
+	background: transparent;
+	display: block;
+	width: 100%;
+	height: 1px;
+	visibility: visible;
+	border: none;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+img {
+	max-width: 100%;
+}
+
+@media only print {
+	img {
+		max-height: 100vh;
+		object-fit: contain;
+	}
+}
+
+@page {
+	margin: 1in;
+}
+
+.collection-content {
+	font-size: 0.875rem;
+}
+
+.column-list {
+	display: flex;
+	justify-content: space-between;
+}
+
+.column {
+	padding: 0 1em;
+}
+
+.column:first-child {
+	padding-left: 0;
+}
+
+.column:last-child {
+	padding-right: 0;
+}
+
+.table_of_contents-item {
+	display: block;
+	font-size: 0.875rem;
+	line-height: 1.3;
+	padding: 0.125rem;
+}
+
+.table_of_contents-indent-1 {
+	margin-left: 1.5rem;
+}
+
+.table_of_contents-indent-2 {
+	margin-left: 3rem;
+}
+
+.table_of_contents-indent-3 {
+	margin-left: 4.5rem;
+}
+
+.table_of_contents-link {
+	text-decoration: none;
+	opacity: 0.7;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.18);
+}
+
+table,
+th,
+td {
+	border: 1px solid rgba(55, 53, 47, 0.09);
+	border-collapse: collapse;
+}
+
+table {
+	border-left: none;
+	border-right: none;
+}
+
+th,
+td {
+	font-weight: normal;
+	padding: 0.25em 0.5em;
+	line-height: 1.5;
+	min-height: 1.5em;
+	text-align: left;
+}
+
+th {
+	color: rgba(55, 53, 47, 0.6);
+}
+
+ol,
+ul {
+	margin: 0;
+	margin-block-start: 0.6em;
+	margin-block-end: 0.6em;
+}
+
+li > ol:first-child,
+li > ul:first-child {
+	margin-block-start: 0.6em;
+}
+
+ul > li {
+	list-style: disc;
+}
+
+ul.to-do-list {
+	text-indent: -1.7em;
+}
+
+ul.to-do-list > li {
+	list-style: none;
+}
+
+.to-do-children-checked {
+	text-decoration: line-through;
+	opacity: 0.375;
+}
+
+ul.toggle > li {
+	list-style: none;
+}
+
+ul {
+	padding-inline-start: 1.7em;
+}
+
+ul > li {
+	padding-left: 0.1em;
+}
+
+ol {
+	padding-inline-start: 1.6em;
+}
+
+ol > li {
+	padding-left: 0.2em;
+}
+
+.mono ol {
+	padding-inline-start: 2em;
+}
+
+.mono ol > li {
+	text-indent: -0.4em;
+}
+
+.toggle {
+	padding-inline-start: 0em;
+	list-style-type: none;
+}
+
+/* Indent toggle children */
+.toggle > li > details {
+	padding-left: 1.7em;
+}
+
+.toggle > li > details > summary {
+	margin-left: -1.1em;
+}
+
+.selected-value {
+	display: inline-block;
+	padding: 0 0.5em;
+	background: rgba(206, 205, 202, 0.5);
+	border-radius: 3px;
+	margin-right: 0.5em;
+	margin-top: 0.3em;
+	margin-bottom: 0.3em;
+	white-space: nowrap;
+}
+
+.collection-title {
+	display: inline-block;
+	margin-right: 1em;
+}
+
+time {
+	opacity: 0.5;
+}
+
+.icon {
+	display: inline-block;
+	max-width: 1.2em;
+	max-height: 1.2em;
+	text-decoration: none;
+	vertical-align: text-bottom;
+	margin-right: 0.5em;
+}
+
+img.icon {
+	border-radius: 3px;
+}
+
+.user-icon {
+	width: 1.5em;
+	height: 1.5em;
+	border-radius: 100%;
+	margin-right: 0.5rem;
+}
+
+.user-icon-inner {
+	font-size: 0.8em;
+}
+
+.text-icon {
+	border: 1px solid #000;
+	text-align: center;
+}
+
+.page-cover-image {
+	display: block;
+	object-fit: cover;
+	width: 100%;
+	height: 30vh;
+}
+
+.page-header-icon {
+	font-size: 3rem;
+	margin-bottom: 1rem;
+}
+
+.page-header-icon-with-cover {
+	margin-top: -0.72em;
+	margin-left: 0.07em;
+}
+
+.page-header-icon img {
+	border-radius: 3px;
+}
+
+.link-to-page {
+	margin: 1em 0;
+	padding: 0;
+	border: none;
+	font-weight: 500;
+}
+
+p > .user {
+	opacity: 0.5;
+}
+
+td > .user,
+td > time {
+	white-space: nowrap;
+}
+
+input[type="checkbox"] {
+	transform: scale(1.5);
+	margin-right: 0.6em;
+	vertical-align: middle;
+}
+
+p {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
+.image {
+	border: none;
+	margin: 1.5em 0;
+	padding: 0;
+	border-radius: 0;
+	text-align: center;
+}
+
+.code,
+code {
+	background: rgba(135, 131, 120, 0.15);
+	border-radius: 3px;
+	padding: 0.2em 0.4em;
+	border-radius: 3px;
+	font-size: 85%;
+	tab-size: 2;
+}
+
+code {
+	color: #eb5757;
+}
+
+.code {
+	padding: 1.5em 1em;
+}
+
+.code-wrap {
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+.code > code {
+	background: none;
+	padding: 0;
+	font-size: 100%;
+	color: inherit;
+}
+
+blockquote {
+	font-size: 1.25em;
+	margin: 1em 0;
+	padding-left: 1em;
+	border-left: 3px solid rgb(55, 53, 47);
+}
+
+.bookmark {
+	text-decoration: none;
+	max-height: 8em;
+	padding: 0;
+	display: flex;
+	width: 100%;
+	align-items: stretch;
+}
+
+.bookmark-title {
+	font-size: 0.85em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	height: 1.75em;
+	white-space: nowrap;
+}
+
+.bookmark-text {
+	display: flex;
+	flex-direction: column;
+}
+
+.bookmark-info {
+	flex: 4 1 180px;
+	padding: 12px 14px 14px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.bookmark-image {
+	width: 33%;
+	flex: 1 1 180px;
+	display: block;
+	position: relative;
+	object-fit: cover;
+	border-radius: 1px;
+}
+
+.bookmark-description {
+	color: rgba(55, 53, 47, 0.6);
+	font-size: 0.75em;
+	overflow: hidden;
+	max-height: 4.5em;
+	word-break: break-word;
+}
+
+.bookmark-href {
+	font-size: 0.75em;
+	margin-top: 0.25em;
+}
+
+.sans { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol"; }
+.code { font-family: "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace; }
+.serif { font-family: Lyon-Text, Georgia, ui-serif, serif; }
+.mono { font-family: iawriter-mono, Nitti, Menlo, Courier, monospace; }
+.pdf .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK JP'; }
+.pdf:lang(zh-CN) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK SC'; }
+.pdf:lang(zh-TW) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK TC'; }
+.pdf:lang(ko-KR) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK KR'; }
+.pdf .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.pdf .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK JP'; }
+.pdf:lang(zh-CN) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK SC'; }
+.pdf:lang(zh-TW) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK TC'; }
+.pdf:lang(ko-KR) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK KR'; }
+.pdf .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.highlight-default {
+}
+.highlight-gray {
+	color: rgb(155,154,151);
+}
+.highlight-brown {
+	color: rgb(100,71,58);
+}
+.highlight-orange {
+	color: rgb(217,115,13);
+}
+.highlight-yellow {
+	color: rgb(223,171,1);
+}
+.highlight-teal {
+	color: rgb(15,123,108);
+}
+.highlight-blue {
+	color: rgb(11,110,153);
+}
+.highlight-purple {
+	color: rgb(105,64,165);
+}
+.highlight-pink {
+	color: rgb(173,26,114);
+}
+.highlight-red {
+	color: rgb(224,62,62);
+}
+.highlight-gray_background {
+	background: rgb(235,236,237);
+}
+.highlight-brown_background {
+	background: rgb(233,229,227);
+}
+.highlight-orange_background {
+	background: rgb(250,235,221);
+}
+.highlight-yellow_background {
+	background: rgb(251,243,219);
+}
+.highlight-teal_background {
+	background: rgb(221,237,234);
+}
+.highlight-blue_background {
+	background: rgb(221,235,241);
+}
+.highlight-purple_background {
+	background: rgb(234,228,242);
+}
+.highlight-pink_background {
+	background: rgb(244,223,235);
+}
+.highlight-red_background {
+	background: rgb(251,228,228);
+}
+.block-color-default {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray {
+	color: rgba(55, 53, 47, 0.6);
+	fill: rgba(55, 53, 47, 0.6);
+}
+.block-color-brown {
+	color: rgb(100,71,58);
+	fill: rgb(100,71,58);
+}
+.block-color-orange {
+	color: rgb(217,115,13);
+	fill: rgb(217,115,13);
+}
+.block-color-yellow {
+	color: rgb(223,171,1);
+	fill: rgb(223,171,1);
+}
+.block-color-teal {
+	color: rgb(15,123,108);
+	fill: rgb(15,123,108);
+}
+.block-color-blue {
+	color: rgb(11,110,153);
+	fill: rgb(11,110,153);
+}
+.block-color-purple {
+	color: rgb(105,64,165);
+	fill: rgb(105,64,165);
+}
+.block-color-pink {
+	color: rgb(173,26,114);
+	fill: rgb(173,26,114);
+}
+.block-color-red {
+	color: rgb(224,62,62);
+	fill: rgb(224,62,62);
+}
+.block-color-gray_background {
+	background: rgb(235,236,237);
+}
+.block-color-brown_background {
+	background: rgb(233,229,227);
+}
+.block-color-orange_background {
+	background: rgb(250,235,221);
+}
+.block-color-yellow_background {
+	background: rgb(251,243,219);
+}
+.block-color-teal_background {
+	background: rgb(221,237,234);
+}
+.block-color-blue_background {
+	background: rgb(221,235,241);
+}
+.block-color-purple_background {
+	background: rgb(234,228,242);
+}
+.block-color-pink_background {
+	background: rgb(244,223,235);
+}
+.block-color-red_background {
+	background: rgb(251,228,228);
+}
+.select-value-color-default { background-color: rgba(206,205,202,0.5); }
+.select-value-color-gray { background-color: rgba(155,154,151, 0.4); }
+.select-value-color-brown { background-color: rgba(140,46,0,0.2); }
+.select-value-color-orange { background-color: rgba(245,93,0,0.2); }
+.select-value-color-yellow { background-color: rgba(233,168,0,0.2); }
+.select-value-color-green { background-color: rgba(0,135,107,0.2); }
+.select-value-color-blue { background-color: rgba(0,120,223,0.2); }
+.select-value-color-purple { background-color: rgba(103,36,222,0.2); }
+.select-value-color-pink { background-color: rgba(221,0,129,0.2); }
+.select-value-color-red { background-color: rgba(255,0,26,0.2); }
+
+.checkbox {
+	display: inline-flex;
+	vertical-align: text-bottom;
+	width: 16;
+	height: 16;
+	background-size: 16px;
+	margin-left: 2px;
+	margin-right: 5px;
+}
+
+.checkbox-on {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22%2358A9D7%22%2F%3E%0A%3Cpath%20d%3D%22M6.71429%2012.2852L14%204.9995L12.7143%203.71436L6.71429%209.71378L3.28571%206.2831L2%207.57092L6.71429%2012.2852Z%22%20fill%3D%22white%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+
+.checkbox-off {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20x%3D%220.75%22%20y%3D%220.75%22%20width%3D%2214.5%22%20height%3D%2214.5%22%20fill%3D%22white%22%20stroke%3D%22%2336352F%22%20stroke-width%3D%221.5%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+	
+</style></head><body><article id="a37bd72d-6791-456c-b33a-30b728eb23f5" class="page sans"><header><h1 class="page-title">BiSeNet V2 : Bilateral Network with Guided Aggregation for Real-time Semantic Segmentation</h1></header><div class="page-body"><hr id="97622d76-aa85-4f6e-a318-99694885fb34"/><p id="29219c2a-f9b0-4e80-9a02-f9571de67a75" class="">
+</p><p id="baacc8d8-986f-44d7-99c9-887659f11f2d" class="">
+</p><h1 id="22f1dee1-11e4-490e-8bcc-88b473817037" class="">초록</h1><p id="5d44c458-435d-4c0b-9194-a3ae150aff16" class="">Semantic segmentation을 위해서는 low-level detail과 high-level semantics가 중요하다. 그러나 속도를 빠르게 하기 위해 많은 방법론에서 low-level details를 희생시킨다. 그래서 이 논문에서는 spatial detail과 categorical semantics를 따로따로 분리해서 취급한다.</p><ul id="958f8caa-feb8-46f3-86ac-11d4e608a124" class="bulleted-list"><li>구조<ol type="1" id="b35bbf53-dcf1-492b-90c4-05c66c7743fc" class="numbered-list" start="1"><li><strong><code>Detail Branch</code></strong> : wide channels와 shallow layers가 있어서 low-level details와 high-resolution feature representation capture</li></ol><ol type="1" id="dcd7c869-e67d-4b8e-83d2-c0973c17fee2" class="numbered-list" start="2"><li><code><strong>Semantic Branch</strong></code> : narrow channels와 deep layers로 high-level semantic context 취득<p id="43f7a56e-3abf-4d06-b584-8a2595ada7a8" class="">narrow channels와 fast-downsampling으로 <strong>lightweight</strong></p></li></ol></li></ul><ul id="1b023e5f-ead4-4573-93f6-c07dd9feb870" class="bulleted-list"><li><code><strong>Guided Aggregation Layer</strong></code><strong> </strong>: mutual connection을 강화시키고, 두 features를 <strong>fuse</strong>함</li></ul><ul id="40464759-b05f-405e-95f3-68e76f494ea3" class="bulleted-list"><li><strong><code>Booster</code></strong><strong> </strong>학습 전략 : 추가적인 inference 시간 들이지 않고 성능을 향상시킴</li></ul><ul id="a894febd-d396-4e7d-ae4c-0149f85fa627" class="bulleted-list"><li>2048x1024 인풋에 대해 Cityscapes test set에서 72.6% mIOU, 156 FPS (GTX 1080 Ti)</li></ul><p id="5f6f0801-c3fb-4514-aeb9-a4ef825c925b" class="">
+</p><h1 id="f8f5cc8a-ea45-44c9-ae1b-34b5536f824a" class="">도입</h1><p id="36d107d1-e97d-467d-aeff-de7731e3918e" class="">Semantic segmentation이 많이 발달했는데, 이러한 방법론들의 정확도는 그것의 backbone 네트워크와 관련이 있다. Backbone으로 두 가지 구조가 많이 사용된다.</p><ol type="1" id="3ba042ed-fea9-41cd-88ba-fd7947ccb0c5" class="numbered-list" start="1"><li><code><mark class="highlight-yellow_background"><strong>Dilation Backbone</strong></mark></code><ul id="3edaf1eb-6744-44b7-bace-a53f92378da7" class="bulleted-list"><li>down-sampling과 해당하는 upsampling을 없애서 high-resolution feature representation을 유지하는 방법</li></ul><ul id="4e095f4c-5ec1-4cbd-9d86-b6b1a4a96a8f" class="bulleted-list"><li>단점 : dilation convolution이 오래 걸리며, down-sampling을 없애는 것도 오래 걸리고, 메모리도 많이 먹는다. </li></ul><figure id="fe4f7fb2-e37d-4ad1-ab75-59b4e4173070" class="image"><a href="BiSeNet%20V2%20Bilateral%20Network%20with%20Guided%20Aggregati%20fe4f7fb2e37d4ad1ab7559b4e4173070/Untitled.png"><img style="width:384px" src="BiSeNet%20V2%20Bilateral%20Network%20with%20Guided%20Aggregati%20fe4f7fb2e37d4ad1ab7559b4e4173070/Untitled.png"/></a></figure></li></ol><ol type="1" id="28d48265-1326-42bb-9221-22af02ae4ea7" class="numbered-list" start="2"><li><code><strong>Encoder-Decoder Backbone</strong></code> <ul id="e8ef0a6d-efca-48f5-9544-ad202d70a143" class="bulleted-list"><li>top-down, skip connections to recover high-resolution feature in decoder</li></ul><ul id="6e0fded6-6e5f-4f10-b056-2be018755e65" class="bulleted-list"><li>단점 : 메모리 접근하는 cost가 높다</li></ul><figure id="e85cc0a4-7fca-4edb-afe7-76bbc3d21d77" class="image"><a href="BiSeNet%20V2%20Bilateral%20Network%20with%20Guided%20Aggregati%20fe4f7fb2e37d4ad1ab7559b4e4173070/Untitled%201.png"><img style="width:384px" src="BiSeNet%20V2%20Bilateral%20Network%20with%20Guided%20Aggregati%20fe4f7fb2e37d4ad1ab7559b4e4173070/Untitled%201.png"/></a></figure></li></ol><p id="073cc79f-ee8a-419f-9867-9b319ec6d948" class="">그러나 위 두 방법 모두 inference 시간에 대한 고려 없이 설계된 것이고, real-time application에 맞지 않다. 이 때문에 현재 real-time용 방법들은 주로 모델을 빠르게 하기 위해 다음 두 가지 방법으로 접근한다.</p><ol type="1" id="060d3079-e462-4580-aac8-d215ed3aaef4" class="numbered-list" start="1"><li><code>Input Restricting</code><ul id="131c16f0-4827-4596-b224-0305814b83a7" class="bulleted-list"><li>인풋 이미지 자체가 작으면 얼마 안 안걸린다</li></ul></li></ol><ol type="1" id="70f513ca-1c90-49a4-b286-237236635639" class="numbered-list" start="2"><li><code>Channel Pruning</code><ul id="e731c5e1-91c0-4fe8-a8e1-2d96e9a9f086" class="bulleted-list"><li>직관적으로 가속화 방법이다. 특히 early stages에서 channel pruning을 하면 훨씬 속도를 줄일 수 있다. </li></ul></li></ol><p id="7e00606f-424c-4b0b-b78c-eb1648c540d0" class="">그러나 이 두 방법 모두 low-level details은 포기한 것이고 이 때문에 정확도 성능이 떨어진다. 그러므로 정확도와 속도를 모두 가져오기 위해 specific architecture를 만드는 것이 중요하다.</p><p id="eeb770cc-d71f-48ab-957d-ffb5f66651e0" class="">일반적인 semantic segmentation task에서는 deep and wide network가 low-level, high-level informations를 모두 encode했었다. </p><p id="bdbea0ef-4476-4c77-913a-213653ddf0b2" class="">그러나 real-time semantic segmentation에서는 spatial details와 categorical semantics를 분리했다. 이 논문에서 제안하는 BiSeNet V2에서는 Detail Branch와 Semantic Branch로 분리했다. Semantic Branch는 narrow (적은) channels을 사용해서 lightweight하고 빠르게 downsampling할 수 있다는 것이 특징이다. 두 branch에서 얻어진 features는 더 종합적인 representation을 위해 merge된다.</p><figure id="fddea947-bf35-4052-beed-c1f7d582d099" class="image"><a href="BiSeNet%20V2%20Bilateral%20Network%20with%20Guided%20Aggregati%20fe4f7fb2e37d4ad1ab7559b4e4173070/Untitled%202.png"><img style="width:497px" src="BiSeNet%20V2%20Bilateral%20Network%20with%20Guided%20Aggregati%20fe4f7fb2e37d4ad1ab7559b4e4173070/Untitled%202.png"/></a></figure><p id="77218dc0-19a1-4d54-ae83-9de6a6a26cef" class="">
+</p><p id="d9fca85f-a1a2-4d34-9a51-08c529ba4270" class="">특히 이 논문에서 <code>Guided Aggregation Layer</code>를 사용해서 효과적으로 features를 merge한다.</p><p id="535e422d-9c98-4144-8896-755ead85a71b" class="">또한 inference 단계에서는 사용하지 않는 <mark class="highlight-gray_background">series of auxiliary prediction heads</mark>를 사용하는 <code>booster 학습 전략</code>을 제안해서 inference 시간 증가 없이 성능 증가를 가져왔다.</p><figure id="1a86018e-ca73-4330-a10b-fe3c54c38da9" class="image"><a href="BiSeNet%20V2%20Bilateral%20Network%20with%20Guided%20Aggregati%20fe4f7fb2e37d4ad1ab7559b4e4173070/Untitled%203.png"><img style="width:828px" src="BiSeNet%20V2%20Bilateral%20Network%20with%20Guided%20Aggregati%20fe4f7fb2e37d4ad1ab7559b4e4173070/Untitled%203.png"/></a></figure><p id="d563d3e3-238e-4e22-a1df-8d7dfcb93c36" class="">
+</p><h3 id="cf791d7a-361d-4bcf-bab1-da2851e163c6" class="">💡 Contribution</h3><ul id="0b616b98-4f4e-410a-b548-75c87b2a6b2a" class="bulleted-list"><li>two-pathway 구조 제안</li></ul><ul id="6a4d48f7-6aa9-49eb-9f98-66268fc11931" class="bulleted-list"><li>Semantic Branch : new light-weight network based on <code><mark class="highlight-gray_background">depth-wise convolutions</mark></code> 사용해서 receptive field를 키우고 rich contextual information을 capture함</li></ul><ul id="9a818bdf-a7cf-4809-bb4f-61a9ded4bfd9" class="bulleted-list"><li>Booster 학습 전략</li></ul><ul id="f8ec5b10-9801-43da-a00b-2c09b57185a7" class="bulleted-list"><li>Cityscapes, CamVid, COCO-Stuff에서 좋은 성능, Cityscapes test set에서 72.6% mIOU, 156 FPS</li></ul><p id="5cdb1ee4-9b28-400e-ae7d-f2e305c21478" class="">
+</p><p id="c3843ebd-a51c-42ef-ade1-f11939ab2b2a" class="">💡 BiSeNet에 비해 다음 사항이 변경되었다.</p><ol type="1" id="f74fa972-1ee9-4625-b59a-d9fbb5d7c88e" class="numbered-list" start="1"><li>구조를 단순화 시켰다.<ul id="e2fd55f9-7812-4bd3-b93c-3c5645b2f0c4" class="bulleted-list"><li>시간이 많이 소요되는 cross-layer connection을 없애서 더 명료하고 단순한 구조</li></ul></li></ol><ol type="1" id="9e195665-8c3f-4b2b-9c1c-663c13530e5e" class="numbered-list" start="2"><li>전체적인 구조를 더 compact한 구조와 well-designed components로 변경<ul id="6894dc6a-b1fc-4868-a48f-0989033231c9" class="bulleted-list"><li>Detail Path를 더 깊게 만들어서 더 많은 detail을 encode할 수 있도록 함</li></ul><ul id="12844066-787a-4bd7-8f9c-227895d420a3" class="bulleted-list"><li>Semantic Path에서 depth-wise convolution을 사용한 light-weight components을 설계</li></ul></li></ol><ol type="1" id="a7536a8e-673d-46ba-83d4-7d546cf57506" class="numbered-list" start="3"><li>comprehensive ablative experiment를 수행해서 effectiveness, efficiency를 설명함</li></ol><ol type="1" id="b0762264-8faa-4ee1-a4d0-3145c0b5092c" class="numbered-list" start="4"><li>성능 향상 많이 함</li></ol><p id="d436f521-fc03-470c-b34f-8f6ab91292d4" class="">
+</p><p id="20d0f884-bebb-4ff7-8055-622c72738262" class="">
+</p><h1 id="dfee7f62-8766-4ad9-9b5a-fa9c208b1165" class="">3. Core Concepts of BiSeNetV2</h1><p id="cb74e046-90ed-4678-b272-7db9e9e68b99" class="">
+</p><h2 id="37dc3349-8073-4431-b6f6-34b2799bb9bc" class="">3.1 Detail Branch</h2><p id="4849fbab-5aaf-4988-bcbe-dedd0572b90c" class="">low-level information인 spatial details를 위한 것이므로 <code><mark class="highlight-red_background">rich channel</mark></code> capacity가 필요하다. 또한 low-level에만 집중하기 때문에 small stride를 가진 <code><mark class="highlight-red_background">shallow layers</mark></code>를 가진다. 그 결과로 나오는 feature representation은 large spatial size와 wide channels를 가진다. 그러므로 메모리 access양 증가와 속도 저하를 가져오는 <code><mark class="highlight-teal_background">residual connection을 사용하지 않는 편</mark></code>이 낫다. </p><h2 id="7933bc70-8fae-4782-9504-47dc67047e91" class="">3.2 Semantic Branch</h2><p id="0c4658cb-4260-415d-bd99-b38b97f8e70e" class="">Detail Branch와 병렬로 수행되며 high-level semantics를 capture한다. 이 논문에서는 Semantic Branch가 Detail Branch channel의 <style>@import url('https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.2/katex.min.css')</style><span data-token-index="0" contenteditable="false" class="notion-text-equation-token" style="user-select:all;-webkit-user-select:all;-moz-user-select:all"><span></span><span><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>λ</mi></mrow><annotation encoding="application/x-tex">λ</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.69444em;vertical-align:0em;"></span><span class="mord mathnormal">λ</span></span></span></span></span><span>﻿</span></span> (<style>@import url('https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.2/katex.min.css')</style><span data-token-index="0" contenteditable="false" class="notion-text-equation-token" style="user-select:all;-webkit-user-select:all;-moz-user-select:all"><span></span><span><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>λ</mi><mo>&lt;</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">λ &lt; 1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.73354em;vertical-align:-0.0391em;"></span><span class="mord mathnormal">λ</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">&lt;</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">1</span></span></span></span></span><span>﻿</span></span>) 배의 개수를 가져서 branch가 lightweight될 수 있도록 실험했다. 근본적으로 Semantic Branch는 어떠한 lightweight convolutional model이 되어도 된다.</p><p id="b3dfe3d6-35d9-4365-8a12-aa0f97a6df70" class="">또한 semantic branch에서 <code>fast-downsampling strategy</code>를 사용해서 feature representation의<mark class="highlight-red"> level을 높이고 receptive field를 확장</mark>시켰다.</p><p id="317a9328-36b0-4375-a22a-d742401d3ed6" class="">그리고 큰 receptive field를 위해 <code>global average pooling</code>을 사용했다.</p><h2 id="0cf584c9-b75a-4912-a8f2-86148160949e" class="">3.3 Aggregation Layer</h2><p id="69434e4a-398e-4080-98e7-8b61a5c131de" class="">Detail Branch와 Semantic Brach의 features는 서로 상호보완적이다. 그러므로 Aggregation Layer가 두 타입의 features를 merge하기 위해 사용된다. fast-downsampling strategy때문에 <code><mark class="highlight-yellow_background">Semantic Branch의 output의 spatial dimension이 Detail Branch output보다 작다.</mark></code></p><p id="657c252f-cfe7-423e-bbc8-f4e6fb044590" class="">
+</p><h1 id="5da4fa53-530a-4c38-9453-472e8eae512d" class="">4. Bilateral Segmentation Network</h1><p id="54bf29e4-3ec3-4ce4-9d7d-415eb2ea1787" class="">BiSeNet의 컨셉은 일반적이라서 다양한 convolution models로도 구현가능하다. 주 key concept (Detail branch, Semantic Branch, Aggregation Layer)만 있으면 된다.</p><p id="1ea96510-f4f4-4791-97f8-f4c303dcf2e2" class="">4장에서는 instantiations of the overall architecture를 설명하고 Fig 3에 나와있는 다른 specific designs에 대해 다룬다.</p><figure id="09ca735d-a172-4e37-9148-eda642e718e6" class="image"><a href="BiSeNet%20V2%20Bilateral%20Network%20with%20Guided%20Aggregati%20fe4f7fb2e37d4ad1ab7559b4e4173070/Untitled%204.png"><img style="width:1212px" src="BiSeNet%20V2%20Bilateral%20Network%20with%20Guided%20Aggregati%20fe4f7fb2e37d4ad1ab7559b4e4173070/Untitled%204.png"/></a></figure><h2 id="4e51bd11-2565-41f7-8585-f0b0c15b9bea" class="">4.1 Detail Branch</h2><p id="dfb11b02-039a-442d-b6f7-4c65a1e86c36" class="">Detail Branch의 instantiation은 Table 1과 같다</p><figure id="67138fd0-ddd6-4019-82a8-3d18a2e67b73" class="image"><a href="BiSeNet%20V2%20Bilateral%20Network%20with%20Guided%20Aggregati%20fe4f7fb2e37d4ad1ab7559b4e4173070/Untitled%205.png"><img style="width:1221px" src="BiSeNet%20V2%20Bilateral%20Network%20with%20Guided%20Aggregati%20fe4f7fb2e37d4ad1ab7559b4e4173070/Untitled%205.png"/></a></figure><p id="f2cb4620-1bf6-4a71-9047-af3b16b2997a" class="">3 개 stage로 구성되며, stage의 각 layer는 convolution 다음에 bn, activation이 따르는 구조이다. 각 stage 의 첫 번째 layer는 stride=2이며, 같은 stage의 다른 layers는 같은 개수의 filters와 feature map size를 가진다. 이에 따라 이 branch는 인풋 사이즈의 1/8 크기의 output feature maps를 만들어낸다. Detail Branch가 high channel capacity랑 large spatial dimension이 크기 때문에 <mark class="highlight-red"><strong>residual structure를 사용하면 메모리 접근 cost가 커진다. 그렇기 때문에 VGG 구조를 사용한다.</strong></mark></p><h2 id="58c59c85-3d47-4548-8dc8-abc8493efd6c" class="">4.2 Semantic Branch</h2><p id="a67e8849-7461-4633-b245-2e9a7342dd9d" class="">큰 receptive field와 효율적인 연산을 동시에 고려해서 lightweight recognition model인 Xception, MobileNet, ShuffleNet을 차용한다. Semantic Branch의 key features는 다음과 같다</p><h3 id="9bfa99ef-1510-4da9-9d5a-a047e26591ad" class="">✨<mark class="highlight-blue_background"><code>Stem Block</code></mark></h3><p id="aa75947c-3a40-4276-8322-b05f30b97b28" class="">Stem Branch의 첫 번째 stage로 Stem Block을 사용한다.</p><figure id="1ab322e3-49c0-45a7-926f-231e1262ec16" class="image"><a href="BiSeNet%20V2%20Bilateral%20Network%20with%20Guided%20Aggregati%20fe4f7fb2e37d4ad1ab7559b4e4173070/Untitled%206.png"><img style="width:347px" src="BiSeNet%20V2%20Bilateral%20Network%20with%20Guided%20Aggregati%20fe4f7fb2e37d4ad1ab7559b4e4173070/Untitled%206.png"/></a></figure><p id="346bff99-4368-4e67-aa84-455d8558e227" class="">Stem Block에서는 두 가지 downsampling 방식을 사용해서 feature representation으로 shrink한다. 그 다음 output features가 concat된다. 이를 통해 연산양이 줄며 효과적으로 feature expression을 할 수 있다.</p><h3 id="2e1728dd-a70f-4510-855b-77d4527075ee" class="">✨<mark class="highlight-blue_background"><code>Context Embedding Block</code></mark></h3><p id="d7070d17-72f5-448a-8370-811e5cd85f96" class="">이전 연구들에 영감을 받아 Context Embedding Block을 설계했다. 이 블록은 <mark class="highlight-blue"><code>global average pooling</code></mark>과 <mark class="highlight-blue"><code>residual connection</code></mark>을 사용해서 global contextual information을 효율적으로 embed한다.</p><figure id="a896b01a-9691-474d-8b50-b4ed85935d44" class="image"><a href="BiSeNet%20V2%20Bilateral%20Network%20with%20Guided%20Aggregati%20fe4f7fb2e37d4ad1ab7559b4e4173070/Untitled%207.png"><img style="width:290px" src="BiSeNet%20V2%20Bilateral%20Network%20with%20Guided%20Aggregati%20fe4f7fb2e37d4ad1ab7559b4e4173070/Untitled%207.png"/></a></figure><h3 id="8a25205c-ffd2-4a18-a9e6-c9660930f8c9" class="">✨<mark class="highlight-blue_background"><code>Gather-and-Expansion Layer</code></mark></h3><p id="28072c36-d5ac-4a6f-bfa3-d9bfbf89cf30" class=""><mark class="highlight-blue"><code>depth-wise convolution의 이점</code></mark>을 취하기 위해 Gather-and-Expansion Layer를 사용한다.</p><figure id="d95360ac-f0e4-4b59-814e-b42b03c91dd5" class="image"><a href="BiSeNet%20V2%20Bilateral%20Network%20with%20Guided%20Aggregati%20fe4f7fb2e37d4ad1ab7559b4e4173070/Untitled%208.png"><img style="width:598px" src="BiSeNet%20V2%20Bilateral%20Network%20with%20Guided%20Aggregati%20fe4f7fb2e37d4ad1ab7559b4e4173070/Untitled%208.png"/></a></figure><p id="7bec2f1f-df85-49fd-b18c-450eccd3958b" class="">Gather-and-Expansion Layer는 다음으로 구성되어 있다.</p><p id="709abaed-7f8a-43a4-9fca-b076051aa89b" class="">(i) 3x3 convolution으로 효율적으로 feature responses를 aggregate하고 higer-dimensional space로 expand함</p><p id="14e5aa5d-d28b-4e06-b79f-bdacee66668c" class="">(iii) 3x3 depth-wise convolution을 expansion layer의 각 output channel마다 독립적으로 수행</p><p id="1bf4c7c2-f31c-4024-805f-7bcf4e88824d" class="">(iv) 1x1 convolution을 projection layer로 사용해서 depth-wise convolution의 output을 low channel capacity space로 project함</p><p id="1e90cef9-3253-4b81-a4df-f44679a7c2dd" class="">stride=2일 때 3x3 depth-wise convolution을 사용해서 receptive field를 더 확장시키고, 하나의 3x3 separable convolution을 shortcut으로 사용함</p><p id="0ed5ba7a-5d18-46a6-9eb4-ad86f952d9d2" class="">
+</p><p id="b54bd4f8-0dea-462d-bb4c-06e721f8f1da" class="">
+</p><p id="888df42e-474c-4dae-94f8-3aa91301f2af" class="">
+</p><h2 id="06770f47-edb3-45a5-a4d7-493269761dfc" class="">4.3 Bilateral Guided Aggregation</h2><h2 id="06d78231-a1e4-48f4-9f96-40dfbfa2dfd2" class="">4.4 Booster Training Strategy</h2><p id="5aa8a8d8-f683-49d9-ada5-1b6cd84eab19" class="">
+</p><h1 id="1f7c4930-651c-4a24-9b5a-649d62c5b022" class="">5. 실험 결과</h1><p id="e857d3d0-bcda-4f09-94ef-fb6565d03f05" class="">👉 <strong>Training</strong></p><ul id="025a7bc7-d92f-47c4-9998-167a0eb74758" class="bulleted-list"><li>trained from scratch with &quot;kaiming normal&quot; initialization</li></ul><ul id="a54c1b82-e6df-4ec0-89a9-a6672d1e6174" class="bulleted-list"><li>SGD, 0.9 momentum</li></ul><ul id="6c510fe0-9f9e-47f9-88f7-dd1cc433b6dd" class="bulleted-list"><li>batch size 16</li></ul><ul id="a3b13041-6c86-4e26-8491-7efe7c9318a2" class="bulleted-list"><li>weight decay : [Cityscapes, CamVid] 0.0005, [COCO-Stuff] 0.0001<p id="0347b91d-b70e-4ce3-b1a1-dc7eb36bf485" class="">weight decay regularization은 convolution layer parameters에만 적용됨</p></li></ul><ul id="03de7efa-bd4b-4ff9-87d4-6aff4550e6c4" class="bulleted-list"><li>initial rate : 5e-2, poly learning rate strategy</li></ul><ul id="813825f2-b3ef-4ae4-9b57-f2dd3dbfefbd" class="bulleted-list"><li>iterations : 150K(Cityscapes), 10K(CamVid), 20K(COCO-Stuff)</li></ul><ul id="82b59423-3944-46d3-bd44-697d4d0f075e" class="bulleted-list"><li>augmentation<ul id="b8729957-b1d8-4089-b3fe-624218db6660" class="bulleted-list"><li>random horizontal flip</li></ul><ul id="83ecb884-dcd2-4c5a-ba4c-11380fafdcc8" class="bulleted-list"><li>random scale {0.75, 1, 1.25, 1.5, 1.75, 2.0}</li></ul><ul id="caced084-69ca-46ea-a605-da8d3eaf27f3" class="bulleted-list"><li>random crop to fixed size 2048*1024 (Cityscapes), 960*720 (CamVid), 640*640 (COCO-Stuff)<p id="986123af-44cb-4e60-bb36-02c9ebe959ee" class="">Cityscapes 인풋은 1024*512로 resize되서 학습됨</p></li></ul></li></ul><p id="b29b32a7-ef06-40fb-9239-63af2616570e" class="">👉 <strong>Inference</strong></p><ul id="f843c951-c753-4dd3-aa68-5590ab91d965" class="bulleted-list"><li>2048*1024 인풋에 대해 1024*512로 resize하고 예측결과를 기존 사이즈로 resize해줌</li></ul><ul id="4a9b1608-0e84-4cc5-978c-7a28c93a68c3" class="bulleted-list"><li>하나의 gpu로 인퍼런서하고 5000 interations 반복해서 error fluctuation을 제거함 (resize 시간까지 inference에 포함)</li></ul><ul id="a742fb27-406f-4a37-b597-5e0727eebc66" class="bulleted-list"><li>Cityscapes, CamVid에는 mIOU 쓰고, COCO-Stuff에는 mIOU랑 pixACC 사용</li></ul><p id="a64d34f0-3d12-4f90-84d8-efab6cb43427" class="">👉 <strong>Setup</strong></p><ul id="6fa399f9-14de-40ef-8894-fac16b00534a" class="bulleted-list"><li>Pytorch 1.0</li></ul><ul id="7dcbbb10-52bd-4ef2-857e-70bb7a5fea8f" class="bulleted-list"><li>GTX 1080Ti</li></ul><ul id="6610cdce-6d53-4668-b192-898252f4927c" class="bulleted-list"><li>CUDA 9.0, CUDNN 7.0, TensorRT v5.1.5</li></ul><p id="34a7ba34-3dbc-48dc-8b3a-23d0b9fdb8cf" class="">
+</p><p id="dd397f8b-e293-4743-8436-ef43aa27f691" class="">
+</p><p id="d4b51209-ffc6-49ab-bcc5-74c38c7f6684" class="">
+</p><p id="c5d77013-8441-4aa1-905b-855d1cc5f024" class="">
+</p></div></article></body></html>
