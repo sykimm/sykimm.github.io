@@ -1,1 +1,0 @@
-# sykimm.github.io
