@@ -1,49 +1,58 @@
 <!DOCTYPE html>
 <html lang="{{ site.lang | default: "en-US" }}">
+
   <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- General meta -->
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-{% seo %}
-    <link rel="stylesheet" href="{{ "/assets/css/style.css?v=" | append: site.github.build_revision | relative_url }}">
+    {% if page.indexing == false %}
+      <meta name="robots" content="noindex">
+    {% endif %}
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    {% if page.collectionpage %}
+      {% seo title=false %}
 
-    <link rel="preload" href="{{ "/assets/img/logo.png?v=" | append: site.github.build_revision | relative_url }}" as="image">
-    <!--[if lt IE 9]>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
-    <![endif]-->
-    {% include head-custom.html %}
+      {% assign collectiondata = site.collections | where: "label", page.collectionpage | first %}
+      <title>{{ collectiondata.title }} - {{ site.title }}</title>
+      <meta property="og:title" content="{{ collectiondata.title }}">
+      <meta name="description" content="{{ collectiondata.description }}">
+      <meta property="og:description" content="{{ collectiondata.description }}">
+    {% else %}
+      {% seo %}
+    {% endif %}
+    {% if site.fonts.preconnect_urls %}
+      {% for url in site.fonts.preconnect_urls %}
+        <link rel="preconnect" href="{{ url }}" crossorigin />
+      {% endfor %}
+    {% endif %}
+
+    <link rel="manifest" href="{{ "/manifest.json" | relative_url }}">
+    <meta name="theme-color" content="{{ site.manifest.theme_color | default: '#242e2b' }}"/>
+
+    {% if site.css_inline == true %}
+      {% include site-styles.html %}
+    {% else %}
+      <link rel="stylesheet" href="{{ "/assets/styles.css" | relative_url }}">
+    {% endif %}
+
+    {% if site.favicons or site.avatarurl %}{% include site-favicons.html %}{% endif %}
+
+    {% if site.google_analytics %}{% include site-analytics.html %}{% endif %}
+
+    {% include site-fonts.html %}
+
+    {% include site-before-start.html %}
   </head>
-  <body>
-    <div class="wrapper">
-      <div class="sidebar">
-        <header>
-          <img class="img-circle" rel="prefetch" src="{{ "/assets/img/logo.png?v=" | append: site.github.build_revision | relative_url }}">
-          <h1><a href="{{ "/" | absolute_url }}">{{ site.title | default: site.github.repository_name }}</a></h1>
-          
-          <p>{{ site.description | default: site.github.project_tagline }}</p>
 
-          {% include sidebar.html %}
+  <body class="layout-{{ page.layout }}{% if page.title %}  {{ page.title | slugify }}{% endif %}">
+    {% include site-icons.svg %}
 
-        </header>
+    {{ content }}
 
-        {% include links-mobile.html %}
+    {% if site.service_worker != false %}{% include site-sw.html %}{% endif %}
 
-        <div class="sidebar-footer">
-          {%- include footer.html -%}
-        </div>
-      </div>
-      <section>
-
-      {{ content }}
-
-      </section>
-      <footer>
-        {%- include footer.html -%}
-      </footer>
-    </div>
-    <script src="{{ "/assets/js/scale.fix.js" | relative_url }}"></script>
+    {% include site-before-end.html %}
   </body>
+
 </html>
